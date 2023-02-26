@@ -1,3 +1,3 @@
-# github-trending Changelog
+# GitHub Trending Changelog
 
-## [Initial Version] - 2023-02-18
+## [Initial Version] - 2023-02-27
