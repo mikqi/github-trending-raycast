@@ -696,7 +696,7 @@ export enum DateRange {
 }
 
 export const DATE_RANGE_OPTIONS = [
-  { label: 'Today', value: DateRange.daily },
-  { label: 'This week', value: DateRange.weekly },
-  { label: 'This month', value: DateRange.monthly },
+  { label: 'Today', value: DateRange.daily, key: 't' },
+  { label: 'This week', value: DateRange.weekly, key: 'w' },
+  { label: 'This month', value: DateRange.monthly, key: 'm' },
 ]
