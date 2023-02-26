@@ -60,9 +60,10 @@ export default function Command() {
     fetchRepos()
   }, [selectedLanguage])
 
-  console.log(repos[0])
-
   const handleSearchTextChange = (searchText: string) => {
+    if (searchText === '') {
+      return setSelectedLanguage('')
+    }
     setQuery(searchText)
   }
 
