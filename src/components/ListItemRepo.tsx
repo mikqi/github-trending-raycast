@@ -1,6 +1,7 @@
 import { List } from '@raycast/api'
 import { PROGRAMMING_LANGUAGES_COLORS } from '../constants'
 import { RepoType } from '../type'
+import { formatNumber } from '../utils'
 import { ActionLanguage } from './ActionLanguage'
 
 export type ListItemProps = {
@@ -16,7 +17,7 @@ export const ListItemRepo = ({ repo, onRangeChange }: ListItemProps) => {
     <List.Item
       title={repo.author + '/' + repo.name}
       subtitle={{
-        value: `  ☆  ${repo.stars}`,
+        value: `  ☆ ${formatNumber(repo.stars)}`,
         tooltip: repo.description,
       }}
       accessories={[{ tag: { value: repo.language || 'Unknown', color: languageColor } }]}

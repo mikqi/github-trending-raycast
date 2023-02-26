@@ -2,6 +2,7 @@ import { Action, ActionPanel, Detail, Icon, useNavigation } from '@raycast/api'
 import { useFetch } from '@raycast/utils'
 import { PROGRAMMING_LANGUAGES_COLORS } from '../constants'
 import { RepoType } from '../type'
+import { formatNumber } from '../utils'
 
 export const RepoDetail = ({ repo }: { repo: RepoType }) => {
   const { pop } = useNavigation()
@@ -19,7 +20,7 @@ export const RepoDetail = ({ repo }: { repo: RepoType }) => {
       metadata={
         <Detail.Metadata>
           <Detail.Metadata.Link title="Repository" target={repo.href} text={repo.author + '/' + repo.name} />
-          <Detail.Metadata.Label title="Stars" icon={Icon.Star} text={`${repo.stars}`} />
+          <Detail.Metadata.Label title="Stars" icon={Icon.Star} text={`${formatNumber(repo.stars)}`} />
           <Detail.Metadata.TagList title="Language">
             <Detail.Metadata.TagList.Item color={languageColor} text={repo.language} />
           </Detail.Metadata.TagList>
