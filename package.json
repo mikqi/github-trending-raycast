@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "github-trending",
-  "title": "github-trending",
-  "description": "",
+  "title": "GitHub Trending",
+  "description": "Template for showing typeahead search with network results.",
   "icon": "command-icon.png",
   "author": "mikqi",
   "categories": [
@@ -19,7 +19,8 @@
   ],
   "dependencies": {
     "@raycast/api": "^1.47.3",
-    "@raycast/utils": "^1.4.8"
+    "@raycast/utils": "^1.4.8",
+    "trending-github": "^2.0.7"
   },
   "devDependencies": {
     "@types/node": "18.8.3",
