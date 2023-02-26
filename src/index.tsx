@@ -1,6 +1,5 @@
 import { ActionPanel, Action, List, Cache } from '@raycast/api'
-import { useFetch, Response } from '@raycast/utils'
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useCallback } from 'react'
 import trending from 'trending-github'
 
 import { PROGRAMMING_LANGUAGES, DATE_RANGE_OPTIONS } from './constants'
@@ -114,12 +113,12 @@ export default function Command() {
     fetchRepos()
   }, [state.selectedLanguage, state.range])
 
-  const handleSearchFilterChange = (searchFilter: string) => {
+  const handleSearchFilterChange = useCallback((searchFilter: string) => {
     if (searchFilter === '') {
       return dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: '' })
     }
     dispatch({ type: 'SET_QUERY', payload: searchFilter })
-  }
+  })
 
   const handleTimeRangeChange = (timeRange: string) => {
     dispatch({ type: 'SET_RANGE', payload: timeRange })
