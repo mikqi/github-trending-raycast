@@ -1,91 +1,110 @@
-import { ActionPanel, Action, List } from "@raycast/api";
-import { useFetch, Response } from "@raycast/utils";
-import { useState } from "react";
-import { URLSearchParams } from "node:url";
+import { ActionPanel, Action, List, Cache } from '@raycast/api'
+import { useFetch, Response } from '@raycast/utils'
+import { useState, useEffect } from 'react'
+import trending from 'trending-github'
+
+import { PROGRAMMING_LANGUAGES, DATE_RANGE } from './constants'
+
+const cache = new Cache()
+cache.set('languages', JSON.stringify(PROGRAMMING_LANGUAGES))
+
+type RepoType = {
+  author: string
+  name: string
+  href: string
+  description: string
+  language: string
+  stars: number
+  forks: number
+  starsInPeriod: number
+}
+
+const Dropdown = () => {
+  return (
+    <List.Dropdown tooltip="Select range">
+      {Object.keys(PROGRAMMING_LANGUAGES).map((range) => (
+        <List.Dropdown.Item key={range} title={PROGRAMMING_LANGUAGES[Number(range)]} value={range} />
+      ))}
+    </List.Dropdown>
+  )
+}
+
+const Actions = ({ repo }: { repo: RepoType }) => {
+  return (
+    <ActionPanel>
+      <ActionPanel.Section>
+        <Action.OpenInBrowser url={repo.href} />
+      </ActionPanel.Section>
+    </ActionPanel>
+  )
+}
 
 export default function Command() {
-  const [searchText, setSearchText] = useState("");
-  const { data, isLoading } = useFetch(
-    "https://api.npms.io/v2/search?" +
-      // send the search query to the API
-      new URLSearchParams({ q: searchText.length === 0 ? "@raycast/api" : searchText }),
-    {
-      parseResponse: parseFetchResponse,
+  const [selectedLanguage, setSelectedLanguage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [repos, setRepos] = useState<RepoType[]>([])
+  const [query, setQuery] = useState('')
+
+  useEffect(() => {
+    async function fetchRepos() {
+      try {
+        setIsLoading(true)
+        const result = await trending('daily', selectedLanguage)
+        setRepos(result as RepoType[])
+        setIsLoading(false)
+      } catch (error) {
+        setIsLoading(false)
+      }
     }
-  );
+
+    fetchRepos()
+  }, [selectedLanguage])
+
+  console.log(repos[0])
+
+  const handleSearchTextChange = (searchText: string) => {
+    setQuery(searchText)
+  }
 
   return (
     <List
-      isLoading={isLoading}
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search npm packages..."
+      onSearchTextChange={handleSearchTextChange}
+      navigationTitle="Trending Repositories¡"
+      isLoading={repos.length === 0 || isLoading}
+      searchBarPlaceholder="Filter repos by name..."
+      searchBarAccessory={<Dropdown />}
       throttle
     >
-      <List.Section title="Results" subtitle={data?.length + ""}>
-        {data?.map((searchResult) => (
-          <SearchListItem key={searchResult.name} searchResult={searchResult} />
-        ))}
-      </List.Section>
-    </List>
-  );
-}
-
-function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
-  return (
-    <List.Item
-      title={searchResult.name}
-      subtitle={searchResult.description}
-      accessoryTitle={searchResult.username}
-      actions={
-        <ActionPanel>
-          <ActionPanel.Section>
-            <Action.OpenInBrowser title="Open in Browser" url={searchResult.url} />
-          </ActionPanel.Section>
-          <ActionPanel.Section>
-            <Action.CopyToClipboard
-              title="Copy Install Command"
-              content={`npm install ${searchResult.name}`}
-              shortcut={{ modifiers: ["cmd"], key: "." }}
+      {query === ''
+        ? repos.map((repo) => (
+            <List.Item
+              key={repo.author + '/' + repo.name}
+              title={repo.author + '/' + repo.name}
+              subtitle={{
+                value: repo.language,
+                tooltip: repo.description,
+              }}
+              accessories={[{ text: `${repo.stars} ☆` }]}
+              actions={<Actions repo={repo} />}
             />
-          </ActionPanel.Section>
-        </ActionPanel>
-      }
-    />
-  );
-}
-
-/** Parse the response from the fetch query into something we can display */
-async function parseFetchResponse(response: Response) {
-  const json = (await response.json()) as
-    | {
-        results: {
-          package: {
-            name: string;
-            description?: string;
-            publisher?: { username: string };
-            links: { npm: string };
-          };
-        }[];
-      }
-    | { code: string; message: string };
-
-  if (!response.ok || "message" in json) {
-    throw new Error("message" in json ? json.message : response.statusText);
-  }
-
-  return json.results.map((result) => {
-    return {
-      name: result.package.name,
-      description: result.package.description,
-      username: result.package.publisher?.username,
-      url: result.package.links.npm,
-    } as SearchResult;
-  });
-}
-
-interface SearchResult {
-  name: string;
-  description?: string;
-  username?: string;
-  url: string;
+          ))
+        : PROGRAMMING_LANGUAGES.filter((lang) => lang.toLowerCase().includes(query.toLowerCase())).map((lang, idx) => (
+            <List.Item
+              key={lang + idx}
+              title={lang}
+              actions={
+                <ActionPanel>
+                  <Action
+                    title="Select Language"
+                    onAction={() => {
+                      setSelectedLanguage(lang)
+                      setQuery('')
+                    }}
+                  />
+                </ActionPanel>
+              }
+            />
+          ))}
+    </List>
+  )
 }
