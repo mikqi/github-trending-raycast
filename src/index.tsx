@@ -29,7 +29,8 @@ const Dropdown = () => {
   )
 }
 
-const LanguageActions = ({ repo }: { repo: RepoType }) => {
+const LanguageActions = ({ repo, onChangeRange }: { repo: RepoType, onChangeRange: (range: string) => void
+ }) => {
   return (
     <ActionPanel>
       <ActionPanel.Section>
@@ -41,7 +42,7 @@ const LanguageActions = ({ repo }: { repo: RepoType }) => {
             key={range.value}
             title={range.label}
             onAction={() => {
-              console.log(range.value)
+              onChangeRange(range.value)
             }}
           />
         ))}
@@ -55,12 +56,13 @@ export default function Command() {
   const [isLoading, setIsLoading] = useState(false)
   const [repos, setRepos] = useState<RepoType[]>([])
   const [query, setQuery] = useState('')
+  const [range, setRange] = useState('daily')
 
   useEffect(() => {
     async function fetchRepos() {
       try {
         setIsLoading(true)
-        const result = await trending('daily', selectedLanguage)
+        const result = await trending(range, selectedLanguage)
         setRepos(result as RepoType[])
         setIsLoading(false)
       } catch (error) {
@@ -69,7 +71,7 @@ export default function Command() {
     }
 
     fetchRepos()
-  }, [selectedLanguage])
+  }, [selectedLanguage, range])
 
   const handleSearchTextChange = (searchText: string) => {
     if (searchText === '') {
@@ -78,10 +80,14 @@ export default function Command() {
     setQuery(searchText)
   }
 
+  const handleRangeChange = (range: string) => {
+    setRange(range)
+  }
+
   return (
     <List
       onSearchTextChange={handleSearchTextChange}
-      navigationTitle="Trending Repositories¡"
+      navigationTitle="Trending Repositories"
       isLoading={repos.length === 0 || isLoading}
       searchBarPlaceholder="Filter repos by name..."
       searchBarAccessory={<Dropdown />}
@@ -97,7 +103,9 @@ export default function Command() {
                 tooltip: repo.description,
               }}
               accessories={[{ text: `${repo.stars} ☆` }]}
-              actions={<LanguageActions repo={repo} />}
+              actions={<LanguageActions repo={repo} 
+                onChangeRange={handleRangeChange}
+              />}
             />
           ))
         : PROGRAMMING_LANGUAGES.filter((lang) => lang.toLowerCase().includes(query.toLowerCase())).map((lang, idx) => (
