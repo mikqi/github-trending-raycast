@@ -55,7 +55,7 @@ export default function Command() {
 
   const handleSearchFilterChange = useCallback((searchFilter: string) => {
     if (searchFilter === '') {
-      dispatch({type: 'SET_QUERY', payload: ''})
+      dispatch({ type: 'SET_QUERY', payload: '' })
       return dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: '' })
     }
     dispatch({ type: 'SET_QUERY', payload: searchFilter })
