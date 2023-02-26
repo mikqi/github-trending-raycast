@@ -11,7 +11,14 @@ import { commandReducer } from './reducer'
 import { RepoType } from './type'
 
 const cache = new Cache()
-cache.set('languages', JSON.stringify(PROGRAMMING_LANGUAGES))
+
+const parseCache = (key: string) => {
+  const data = cache.get(key)
+  if (data) {
+    return JSON.parse(data)
+  }
+  return null
+}
 
 export default function Command() {
   const [state, dispatch] = useReducer(commandReducer, {
@@ -26,7 +33,16 @@ export default function Command() {
     async function fetchRepos() {
       try {
         dispatch({ type: 'SET_IS_LOADING', payload: true })
-        const result = await trending(state.range, state.selectedLanguage)
+
+        const key = `${state.selectedLanguage}-${state.range}`
+        let result
+        if (cache.has(key)) {
+          result = parseCache(key)
+        } else {
+          result = await trending(state.range, state.selectedLanguage)
+          cache.set(key, JSON.stringify(result))
+        }
+
         dispatch({ type: 'SET_REPOS', payload: result as RepoType[] })
         dispatch({ type: 'SET_IS_LOADING', payload: false })
       } catch (error) {
@@ -58,7 +74,7 @@ export default function Command() {
       onSearchTextChange={handleSearchFilterChange}
       navigationTitle="Trending Repositories"
       isLoading={state.isLoading || state.repos.length === 0}
-      searchBarPlaceholder="Filter repos by name..."
+      searchBarPlaceholder="Search for a language..."
       searchBarAccessory={<DropdownRange selectedRange={state.range} onChangeRange={handleTimeRangeChange} />}
       throttle
     >
