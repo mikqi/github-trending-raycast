@@ -3,7 +3,7 @@
   "name": "github-trending",
   "title": "GitHub Trending",
   "description": "Template for showing typeahead search with network results.",
-  "icon": "command-icon.png",
+  "icon": "icon.png",
   "author": "mikqi",
   "categories": [
     "News"

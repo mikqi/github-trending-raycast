@@ -5,12 +5,19 @@ import { RepoDetail } from './RepoDetail'
 
 export const ActionLanguage = ({ repo, onChangeRange }: { repo: RepoType; onChangeRange: (range: string) => void }) => {
   const { push } = useNavigation()
+  const githubDevUrl = `https://github.dev/${repo.author}/${repo.name}`
+
   return (
     <ActionPanel>
       <ActionPanel.Section>
         <Action.OpenInBrowser url={repo.href} />
+        <Action.OpenInBrowser icon="github-dev.png" url={githubDevUrl} title="Open in GitHub.dev" />
         <Action
-          title="See detail"
+          title="Quick Look"
+          shortcut={{
+            modifiers: ['cmd', 'shift'],
+            key: 'enter'
+          }}
           icon={Icon.Book}
           onAction={() => {
             push(<RepoDetail repo={repo} />)
