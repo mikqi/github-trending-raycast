@@ -3,7 +3,7 @@ import { useFetch, Response } from '@raycast/utils'
 import { useState, useEffect } from 'react'
 import trending from 'trending-github'
 
-import { PROGRAMMING_LANGUAGES, DATE_RANGE } from './constants'
+import { PROGRAMMING_LANGUAGES, DATE_RANGE_OPTIONS } from './constants'
 
 const cache = new Cache()
 cache.set('languages', JSON.stringify(PROGRAMMING_LANGUAGES))
@@ -22,18 +22,29 @@ type RepoType = {
 const Dropdown = () => {
   return (
     <List.Dropdown tooltip="Select range">
-      {Object.keys(PROGRAMMING_LANGUAGES).map((range) => (
-        <List.Dropdown.Item key={range} title={PROGRAMMING_LANGUAGES[Number(range)]} value={range} />
+      {DATE_RANGE_OPTIONS.map((range) => (
+        <List.Dropdown.Item key={range.value} title={range.label} value={range.value} />
       ))}
     </List.Dropdown>
   )
 }
 
-const Actions = ({ repo }: { repo: RepoType }) => {
+const LanguageActions = ({ repo }: { repo: RepoType }) => {
   return (
     <ActionPanel>
       <ActionPanel.Section>
         <Action.OpenInBrowser url={repo.href} />
+      </ActionPanel.Section>
+      <ActionPanel.Section title="Range">
+        {DATE_RANGE_OPTIONS.map((range) => (
+          <Action
+            key={range.value}
+            title={range.label}
+            onAction={() => {
+              console.log(range.value)
+            }}
+          />
+        ))}
       </ActionPanel.Section>
     </ActionPanel>
   )
@@ -86,7 +97,7 @@ export default function Command() {
                 tooltip: repo.description,
               }}
               accessories={[{ text: `${repo.stars} ☆` }]}
-              actions={<Actions repo={repo} />}
+              actions={<LanguageActions repo={repo} />}
             />
           ))
         : PROGRAMMING_LANGUAGES.filter((lang) => lang.toLowerCase().includes(query.toLowerCase())).map((lang, idx) => (

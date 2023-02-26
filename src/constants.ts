@@ -689,8 +689,14 @@ export const PROGRAMMING_LANGUAGES = [
   'Zimpl',
 ]
 
-export const DATE_RANGE = {
-  daily: 'Today',
-  weekly: 'This week',
-  monthly: 'This month',
+export enum DateRange {
+  daily = 'daily',
+  weekly = 'weekly',
+  monthly = 'monthly',
 }
+
+export const DATE_RANGE_OPTIONS = [
+  { label: 'Today', value: DateRange.daily },
+  { label: 'This week', value: DateRange.weekly },
+  { label: 'This month', value: DateRange.monthly },
+]
