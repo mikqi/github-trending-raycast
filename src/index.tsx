@@ -19,9 +19,15 @@ type RepoType = {
   starsInPeriod: number
 }
 
-const Dropdown = () => {
+const RangeDropdown = ({
+  onChangeRange,
+  selectedRange,
+}: {
+  onChangeRange: (range: string) => void
+  selectedRange: string
+}) => {
   return (
-    <List.Dropdown tooltip="Select range">
+    <List.Dropdown tooltip="Select range" value={selectedRange} onChange={onChangeRange}>
       {DATE_RANGE_OPTIONS.map((range) => (
         <List.Dropdown.Item key={range.value} title={range.label} value={range.value} />
       ))}
@@ -29,8 +35,7 @@ const Dropdown = () => {
   )
 }
 
-const LanguageActions = ({ repo, onChangeRange }: { repo: RepoType, onChangeRange: (range: string) => void
- }) => {
+const LanguageActions = ({ repo, onChangeRange }: { repo: RepoType; onChangeRange: (range: string) => void }) => {
   return (
     <ActionPanel>
       <ActionPanel.Section>
@@ -90,7 +95,7 @@ export default function Command() {
       navigationTitle="Trending Repositories"
       isLoading={repos.length === 0 || isLoading}
       searchBarPlaceholder="Filter repos by name..."
-      searchBarAccessory={<Dropdown />}
+      searchBarAccessory={<RangeDropdown selectedRange={range} onChangeRange={handleRangeChange} />}
       throttle
     >
       {query === ''
@@ -103,9 +108,7 @@ export default function Command() {
                 tooltip: repo.description,
               }}
               accessories={[{ text: `${repo.stars} ☆` }]}
-              actions={<LanguageActions repo={repo} 
-                onChangeRange={handleRangeChange}
-              />}
+              actions={<LanguageActions repo={repo} onChangeRange={handleRangeChange} />}
             />
           ))
         : PROGRAMMING_LANGUAGES.filter((lang) => lang.toLowerCase().includes(query.toLowerCase())).map((lang, idx) => (
