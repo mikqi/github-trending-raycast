@@ -10,6 +10,7 @@ export const RepoDetail = ({ repo }: { repo: RepoType }) => {
   const authorUrl = `https://github.com/${repo.author}`
   const languageColor =
     PROGRAMMING_LANGUAGES_COLORS?.[repo.language as keyof typeof PROGRAMMING_LANGUAGES_COLORS] ?? '#fff'
+  const githubDevUrl = `https://github.dev/${repo.author}/${repo.name}`
 
   const { data: README, isLoading } = useFetch(READMEUrl, { method: 'GET' })
   return (
@@ -32,7 +33,12 @@ export const RepoDetail = ({ repo }: { repo: RepoType }) => {
       actions={
         <ActionPanel>
           <Action title="Back" icon={Icon.ArrowLeft} onAction={pop} />
-          <Action.OpenInBrowser url={repo.href} />
+
+          <ActionPanel.Section title="Open in Browser">
+            <Action.OpenInBrowser url={repo.href} title="Open Repository in Browser" />
+            <Action.OpenInBrowser url={authorUrl} title="Open Author in Browser" />
+            <Action.OpenInBrowser icon="github-dev.png" url={githubDevUrl} title="Open in GitHub.dev" />
+          </ActionPanel.Section>
         </ActionPanel>
       }
     />

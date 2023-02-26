@@ -11,17 +11,21 @@ export const ActionLanguage = ({ repo, onChangeRange }: { repo: RepoType; onChan
     <ActionPanel>
       <ActionPanel.Section>
         <Action.OpenInBrowser url={repo.href} />
-        <Action.OpenInBrowser icon="github-dev.png" url={githubDevUrl} title="Open in GitHub.dev" />
         <Action
           title="Quick Look"
-          shortcut={{
-            modifiers: ['cmd', 'shift'],
-            key: 'enter'
-          }}
           icon={Icon.Book}
           onAction={() => {
             push(<RepoDetail repo={repo} />)
           }}
+        />
+        <Action.OpenInBrowser
+          shortcut={{
+            modifiers: ['cmd', 'shift'],
+            key: 'enter',
+          }}
+          icon="github-dev.png"
+          url={githubDevUrl}
+          title="Open in GitHub.dev"
         />
       </ActionPanel.Section>
       <ActionPanel.Section title="Range">
