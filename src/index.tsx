@@ -37,8 +37,8 @@ export default function Command() {
         const cacheDate = cache.get('date')
         const currentDate = new Date().getDate().toString()
         const isCacheExpired = cacheDate !== currentDate
-
         const key = `${state.selectedLanguage}-${state.range}`
+
         let result
         if (!isCacheExpired && cache.has(key)) {
           result = parseCache(key)
