@@ -1,25 +1,34 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "github-trending",
-  "title": "github-trending",
-  "description": "",
-  "icon": "command-icon.png",
+  "title": "GitHub Trending",
+  "description": "Quick access to trending repositories on GitHub.",
+  "icon": "icon.png",
   "author": "mikqi",
   "categories": [
-    "News"
+    "Developer Tools",
+    "Web",
+    "News",
+    "Productivity"
+  ],
+  "keywords": [
+    "github",
+    "trending"
   ],
   "license": "MIT",
   "commands": [
     {
       "name": "index",
-      "title": "Trending",
-      "description": "Template for showing typeahead search with network results.",
+      "title": "Trending Repositories",
+      "subtitle": "GitHub",
+      "description": "Quick access to trending repositories on GitHub.",
       "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.47.3",
-    "@raycast/utils": "^1.4.8"
+    "@raycast/utils": "^1.4.8",
+    "trending-github": "^2.0.7"
   },
   "devDependencies": {
     "@types/node": "18.8.3",

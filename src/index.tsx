@@ -1,91 +1,96 @@
-import { ActionPanel, Action, List } from "@raycast/api";
-import { useFetch, Response } from "@raycast/utils";
-import { useState } from "react";
-import { URLSearchParams } from "node:url";
+import { List, Cache } from '@raycast/api'
+import { useEffect, useReducer, useCallback } from 'react'
+import trending from 'trending-github'
+
+import { DropdownRange } from './components/DropdownRange'
+import { ListItemLanguage } from './components/ListItemLanguage'
+import { ListItemRepo } from './components/ListItemRepo'
+
+import { PROGRAMMING_LANGUAGES } from './constants'
+import { commandReducer } from './reducer'
+import { RepoType } from './type'
+
+const cache = new Cache()
+cache.set('date', new Date().getDate().toString())
+
+const parseCache = (key: string) => {
+  const data = cache.get(key)
+  if (data) {
+    return JSON.parse(data)
+  }
+  return null
+}
 
 export default function Command() {
-  const [searchText, setSearchText] = useState("");
-  const { data, isLoading } = useFetch(
-    "https://api.npms.io/v2/search?" +
-      // send the search query to the API
-      new URLSearchParams({ q: searchText.length === 0 ? "@raycast/api" : searchText }),
-    {
-      parseResponse: parseFetchResponse,
+  const [state, dispatch] = useReducer(commandReducer, {
+    selectedLanguage: '',
+    isLoading: false,
+    repos: [],
+    query: '',
+    range: 'daily',
+  })
+
+  useEffect(() => {
+    async function fetchRepos() {
+      try {
+        dispatch({ type: 'SET_IS_LOADING', payload: true })
+        const cacheDate = cache.get('date')
+        const currentDate = new Date().getDate().toString()
+        const isCacheExpired = cacheDate !== currentDate
+        const key = `${state.selectedLanguage}-${state.range}`
+
+        let result
+        if (!isCacheExpired && cache.has(key)) {
+          result = parseCache(key)
+        } else {
+          result = await trending(state.range, state.selectedLanguage)
+          cache.set(key, JSON.stringify(result))
+          cache.set('date', currentDate)
+        }
+
+        dispatch({ type: 'SET_REPOS', payload: result as RepoType[] })
+        dispatch({ type: 'SET_IS_LOADING', payload: false })
+      } catch (error) {
+        dispatch({ type: 'SET_IS_LOADING', payload: false })
+      }
     }
-  );
+
+    fetchRepos()
+  }, [state.selectedLanguage, state.range])
+
+  const handleSearchFilterChange = useCallback((searchFilter: string) => {
+    if (searchFilter === '') {
+      dispatch({ type: 'SET_QUERY', payload: '' })
+      return dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: '' })
+    }
+    dispatch({ type: 'SET_QUERY', payload: searchFilter })
+  }, [])
+
+  const handleTimeRangeChange = useCallback((timeRange: string) => {
+    dispatch({ type: 'SET_RANGE', payload: timeRange })
+  }, [])
+
+  const handleLanguageChange = useCallback((language: string) => {
+    dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: language })
+    dispatch({ type: 'SET_QUERY', payload: '' })
+  }, [])
 
   return (
     <List
-      isLoading={isLoading}
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search npm packages..."
+      onSearchTextChange={handleSearchFilterChange}
+      navigationTitle="Trending Repositories"
+      isLoading={state.isLoading || state.repos.length === 0}
+      searchBarPlaceholder="Search for a language..."
+      searchBarAccessory={<DropdownRange selectedRange={state.range} onChangeRange={handleTimeRangeChange} />}
       throttle
     >
-      <List.Section title="Results" subtitle={data?.length + ""}>
-        {data?.map((searchResult) => (
-          <SearchListItem key={searchResult.name} searchResult={searchResult} />
-        ))}
-      </List.Section>
+      {state.query === ''
+        ? state.repos.map((repo) => (
+            <ListItemRepo key={repo.author + '/' + repo.name} repo={repo} onRangeChange={handleTimeRangeChange} />
+          ))
+        : PROGRAMMING_LANGUAGES.filter((lang) => lang.toLowerCase().includes(state.query.toLowerCase())).map(
+            (lang, idx) => <ListItemLanguage key={lang + idx} lang={lang} onLanguageChange={handleLanguageChange} />,
+          )}
     </List>
-  );
-}
-
-function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
-  return (
-    <List.Item
-      title={searchResult.name}
-      subtitle={searchResult.description}
-      accessoryTitle={searchResult.username}
-      actions={
-        <ActionPanel>
-          <ActionPanel.Section>
-            <Action.OpenInBrowser title="Open in Browser" url={searchResult.url} />
-          </ActionPanel.Section>
-          <ActionPanel.Section>
-            <Action.CopyToClipboard
-              title="Copy Install Command"
-              content={`npm install ${searchResult.name}`}
-              shortcut={{ modifiers: ["cmd"], key: "." }}
-            />
-          </ActionPanel.Section>
-        </ActionPanel>
-      }
-    />
-  );
-}
-
-/** Parse the response from the fetch query into something we can display */
-async function parseFetchResponse(response: Response) {
-  const json = (await response.json()) as
-    | {
-        results: {
-          package: {
-            name: string;
-            description?: string;
-            publisher?: { username: string };
-            links: { npm: string };
-          };
-        }[];
-      }
-    | { code: string; message: string };
-
-  if (!response.ok || "message" in json) {
-    throw new Error("message" in json ? json.message : response.statusText);
-  }
-
-  return json.results.map((result) => {
-    return {
-      name: result.package.name,
-      description: result.package.description,
-      username: result.package.publisher?.username,
-      url: result.package.links.npm,
-    } as SearchResult;
-  });
-}
-
-interface SearchResult {
-  name: string;
-  description?: string;
-  username?: string;
-  url: string;
+  )
 }
