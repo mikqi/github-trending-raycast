@@ -11,6 +11,7 @@ import { commandReducer } from './reducer'
 import { RepoType } from './type'
 
 const cache = new Cache()
+cache.set('date', new Date().getDate().toString())
 
 const parseCache = (key: string) => {
   const data = cache.get(key)
@@ -18,11 +19,6 @@ const parseCache = (key: string) => {
     return JSON.parse(data)
   }
   return null
-}
-
-const setCache = (key: string, data: unknown, date: string) => {
-  cache.set(key, JSON.stringify(data))
-  cache.set('date', date)
 }
 
 export default function Command() {
@@ -44,17 +40,12 @@ export default function Command() {
         const key = `${state.selectedLanguage}-${state.range}`
 
         let result
-
-        if (isCacheExpired) {
-          cache.clear()
-
-          result = await trending(state.range, state.selectedLanguage)
-          setCache(key, result, currentDate)
-        } else if (!cache.has(key)) {
-          result = await trending(state.range, state.selectedLanguage)
-          setCache(key, result, currentDate)
-        } else {
+        if (!isCacheExpired && cache.has(key)) {
           result = parseCache(key)
+        } else {
+          result = await trending(state.range, state.selectedLanguage)
+          cache.set(key, JSON.stringify(result))
+          cache.set('date', currentDate)
         }
 
         dispatch({ type: 'SET_REPOS', payload: result as RepoType[] })
